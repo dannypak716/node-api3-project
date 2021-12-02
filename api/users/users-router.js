@@ -5,15 +5,12 @@ const {
   validatePost
 } = require('../middleware/middleware');
 
-// You will need `users-model.js` and `posts-model.js` both
-// The middleware functions also need to be required
 const User = require('./users-model')
 const Post = require('../posts/posts-model')
 
 const router = express.Router();
 
 router.get('/', (req, res, next) => {
-  // RETURN AN ARRAY WITH ALL THE USERS
   User.get()
     .then(users => {
       res.json(users);
@@ -22,16 +19,10 @@ router.get('/', (req, res, next) => {
 });
 
 router.get('/:id', validateUserId, (req, res) => {
-  // RETURN THE USER OBJECT
-  // this needs a middleware to verify user id
-  console.log(req.user)
   res.json(req.user);
 });
 
 router.post('/', validateUser, (req, res, next) => {
-  // RETURN THE NEWLY CREATED USER OBJECT
-  // this needs a middleware to check that the request body is valid
-  console.log(req.name)
   User.insert({ name: req.name })  // because we put name on the req in the middleware
     .then(newUser => {
       res.status(201).json(newUser);
@@ -40,10 +31,6 @@ router.post('/', validateUser, (req, res, next) => {
 });
 
 router.put('/:id', validateUserId, validateUser, (req, res, next) => {
-  // RETURN THE FRESHLY UPDATED USER OBJECT
-  // this needs a middleware to verify user id
-  // and another middleware to check that the request body is valid
-  console.log(req.user)
   User.update(req.params.id, { name: req.name })  // because we put name on the req in the middleware
     .then(() => {                         // 1) bc this doesn't return user, it returns lines changed.
       return User.getById(req.params.id)  // 2) so return the specific user you updated here 
@@ -54,16 +41,22 @@ router.put('/:id', validateUserId, validateUser, (req, res, next) => {
     .catch(next)
 });
 
-router.delete('/:id', validateUserId, (req, res) => {
-  // RETURN THE FRESHLY DELETED USER OBJECT
-  // this needs a middleware to verify user id
-  console.log(req.user)
+router.delete('/:id', validateUserId, async (req, res, next) => {  // using async await to switch things up
+  try {
+    await User.remove(req.params.id)
+    res.json(req.user)
+  } catch (err) {
+    next(err)
+  }
 });
 
-router.get('/:id/posts', validateUserId, (req, res) => {
-  // RETURN THE ARRAY OF USER POSTS
-  // this needs a middleware to verify user id
-  console.log(req.user)
+router.get('/:id/posts', validateUserId, async (req, res, next) => {
+  try {
+    const userPosts = await User.getUserPosts(req.params.id)
+    res.json(userPosts)
+  } catch (err) {
+    next(err)
+  }
 });
 
 router.post('/:id/posts', validateUserId, validatePost, (req, res) => {// eslint-disable-line
