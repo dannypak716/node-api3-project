@@ -20,13 +20,11 @@ async function validateUserId(req, res, next) {
       next()
     }
   } catch(err) {
-    res.status(500).json({
-      message: 'could not find the user for some reason'
-    })
+    next(err);
   }
 }
 
-async function validateUser(req, res, next) {
+function validateUser(req, res, next) {
   const { name } = req.body;
   if (!name || !name.trim()) {
     res.status(400).json({
@@ -38,7 +36,7 @@ async function validateUser(req, res, next) {
   }
 }
 
-async function validatePost(req, res, next) {
+function validatePost(req, res, next) {
   const { text } = req.body;
   if (!text || !text.trim()) {
     res.status(400).json({
