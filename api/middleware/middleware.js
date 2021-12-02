@@ -1,5 +1,6 @@
 function logger(req, res, next) {
-  // DO YOUR MAGIC
+  console.log(`[${req.method}] ${req.url}`);
+  next();
 }
 
 function validateUserId(req, res, next) {
