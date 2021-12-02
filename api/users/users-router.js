@@ -25,20 +25,33 @@ router.get('/:id', validateUserId, (req, res) => {
   // RETURN THE USER OBJECT
   // this needs a middleware to verify user id
   console.log(req.user)
+  res.json(req.user);
 });
 
-router.post('/', validateUser, (req, res) => {
+router.post('/', validateUser, (req, res, next) => {
   // RETURN THE NEWLY CREATED USER OBJECT
   // this needs a middleware to check that the request body is valid
   console.log(req.name)
+  User.insert({ name: req.name })  // because we put name on the req in the middleware
+    .then(newUser => {
+      res.status(201).json(newUser);
+    })
+    .catch(next)
 });
 
-router.put('/:id', validateUserId, validateUser, (req, res) => {
+router.put('/:id', validateUserId, validateUser, (req, res, next) => {
   // RETURN THE FRESHLY UPDATED USER OBJECT
   // this needs a middleware to verify user id
   // and another middleware to check that the request body is valid
   console.log(req.user)
-  console.log(req.name)
+  User.update(req.params.id, { name: req.name })  // because we put name on the req in the middleware
+    .then(() => {                         // 1) bc this doesn't return user, it returns lines changed.
+      return User.getById(req.params.id)  // 2) so return the specific user you updated here 
+    })
+    .then(user => {                       // 3) then run with the returned user to update
+      res.json(user);
+    })
+    .catch(next)
 });
 
 router.delete('/:id', validateUserId, (req, res) => {
