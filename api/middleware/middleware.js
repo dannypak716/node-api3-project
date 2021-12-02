@@ -13,22 +13,29 @@ async function validateUserId(req, res, next) {
     const user = await User.getById(req.params.id);
     if (!user) {
       res.status(404).json({
-        message: 'user does not exist'
+        message: 'user not found'
       })
     } else {
       req.user = user;
       next()
     }
-  } catch (err) {
+  } catch(err) {
     res.status(500).json({
       message: 'could not find the user for some reason'
     })
   }
 }
 
-function validateUser(req, res, next) {
-  console.log('validateUser middleware');
-  next();
+async function validateUser(req, res, next) {
+  const { name } = req.body;
+  if (!name || !name.trim()) {
+    res.status(400).json({
+      message: 'missing required name field'
+    })
+  } else {
+    req.name = name.trim();
+    next();
+  }
 }
 
 function validatePost(req, res, next) {
